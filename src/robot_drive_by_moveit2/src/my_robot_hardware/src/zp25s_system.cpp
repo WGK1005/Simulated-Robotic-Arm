@@ -183,8 +183,9 @@ hardware_interface::return_type Zp25sSystem::write(
     int p = rad_to_p(j, hw_commands_[i]);
     p = std::max(P_MIN, std::min(P_MAX, p));
     if (!send_position(j.servo_id, p, move_time_ms_)) {
+      static rclcpp::Clock steady_clock(RCL_STEADY_TIME);
       RCLCPP_WARN_THROTTLE(rclcpp::get_logger("Zp25sSystem"),
-        *rclcpp::get_clock(), 2000, "servo %d write failed", j.servo_id);
+        steady_clock, 2000, "servo %d write failed", j.servo_id);
     }
   }
   return hardware_interface::return_type::OK;
