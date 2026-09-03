@@ -1,0 +1,206 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- ================================================================
+         Real robot model - 5-DOF arm + gripper built with 众灵 ZP25S servos
+         Structure - yaw(1) + pitch(2,3,4) + roll(5) + gripper
+         ZERO POSE assumption - all joint angles = 0 -> arm vertical (+Z),
+         matching the CAD reference pose.
+         Lengths measured in mm and converted to metres here.
+         NOTE - the arm base sits 261mm above the tracked chassis; the
+         chassis itself is not modelled in this package (base_link is the
+         arm mount plate, mounted centered on the chassis).
+
+         IMPORTANT - keep all comments free of "ascii colon + space",
+         because the URDF text is parsed as YAML when passed to
+         robot_state_publisher through ros2 launch.
+         ================================================================ -->
+
+    <!-- base_link - arm mount plate (centered on chassis) -->
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <box size="0.12 0.12 0.03" />
+            </geometry>
+            <origin xyz="0 0 0.015" rpy="0 0 0" />
+            <material name="grey" />
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.12 0.12 0.03" />
+            </geometry>
+            <origin xyz="0 0 0.015" rpy="0 0 0" />
+        </collision>
+    </link>
+
+    <!-- shoulder_link - base rotation column (purple disc), extends 29.3mm up -->
+    <link name="shoulder_link">
+        <visual>
+            <geometry>
+                <cylinder radius="0.05" length="0.0293" />
+            </geometry>
+            <origin xyz="0 0 0.01465" rpy="0 0 0" />
+            <material name="dark_green" />
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="0.05" length="0.0293" />
+            </geometry>
+            <origin xyz="0 0 0.01465" rpy="0 0 0" />
+        </collision>
+    </link>
+
+    <!-- arm_link - upper arm, 118mm long (joint2 -> joint3) -->
+    <link name="arm_link">
+        <visual>
+            <geometry>
+                <box size="0.06 0.06 0.118" />
+            </geometry>
+            <origin xyz="0 0 0.059" rpy="0 0 0" />
+            <material name="grey" />
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.06 0.06 0.118" />
+            </geometry>
+            <origin xyz="0 0 0.059" rpy="0 0 0" />
+        </collision>
+    </link>
+
+    <!-- elbow_link - forearm link, 92mm long (joint3 -> joint4) -->
+    <link name="elbow_link">
+        <visual>
+            <geometry>
+                <box size="0.06 0.06 0.092" />
+            </geometry>
+            <origin xyz="0 0 0.046" rpy="0 0 0" />
+            <material name="blue" />
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.06 0.06 0.092" />
+            </geometry>
+            <origin xyz="0 0 0.046" rpy="0 0 0" />
+        </collision>
+    </link>
+
+    <!-- forearm_link - wrist segment, 31mm long (joint4 -> joint5) -->
+    <link name="forearm_link">
+        <visual>
+            <geometry>
+                <box size="0.06 0.06 0.031" />
+            </geometry>
+            <origin xyz="0 0 0.0155" rpy="0 0 0" />
+            <material name="grey" />
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.06 0.06 0.031" />
+            </geometry>
+            <origin xyz="0 0 0.0155" rpy="0 0 0" />
+        </collision>
+    </link>
+
+    <!-- wrist_link - small wrist/hand carrier after the roll joint -->
+    <link name="wrist_link">
+        <visual>
+            <geometry>
+                <box size="0.05 0.05 0.02" />
+            </geometry>
+            <origin xyz="0 0 0.01" rpy="0 0 0" />
+            <material name="blue" />
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.05 0.05 0.02" />
+            </geometry>
+            <origin xyz="0 0 0.01" rpy="0 0 0" />
+        </collision>
+    </link>
+
+    <!-- hand_link - short fixed mount where the gripper attaches.
+         joint5 -> tool_link total = 0.11 + 0.02 = 0.13 (130mm) -->
+    <link name="hand_link">
+        <visual>
+            <geometry>
+                <box size="0.05 0.05 0.02" />
+            </geometry>
+            <origin xyz="0 0 0.01" rpy="0 0 0" />
+            <material name="grey" />
+        </visual>
+        <collision>
+            <geometry>
+                <box size="0.05 0.05 0.02" />
+            </geometry>
+            <origin xyz="0 0 0.01" rpy="0 0 0" />
+        </collision>
+    </link>
+
+    <!-- tool_link - gripper mounting frame (gripper attaches here) -->
+    <link name="tool_link" />
+
+    <!-- joint1 - base yaw, rotation about vertical Z, continuous 360deg -->
+    <joint name="joint1" type="continuous">
+        <parent link="base_link" />
+        <child link="shoulder_link" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <axis xyz="0 0 1" />
+    </joint>
+
+    <!-- joint2 - shoulder pitch, about Y.
+         Initial (servo zero) at -45deg. Range from -45deg to +90deg;
+         cannot go further negative than -45deg (mount/servo stalls). -->
+    <joint name="joint2" type="revolute">
+        <parent link="shoulder_link" />
+        <child link="arm_link" />
+        <origin xyz="0 0 0.0293" rpy="0 0 0" />
+        <axis xyz="0 1 0" />
+        <limit effort="2.45" velocity="1.0" lower="-0.785398" upper="1.5708" />
+    </joint>
+
+    <!-- joint3 - elbow pitch, about Y. Initial at 0deg (link vertical to
+         the ground), range +-110deg -->
+    <joint name="joint3" type="revolute">
+        <parent link="arm_link" />
+        <child link="elbow_link" />
+        <origin xyz="0 0 0.118" rpy="0 0 0" />
+        <axis xyz="0 1 0" />
+        <limit effort="2.45" velocity="1.0" lower="-1.91986" upper="1.91986" />
+    </joint>
+
+    <!-- joint4 - wrist pitch, about Y.
+         Initial (servo zero) at +90deg; cannot go further positive,
+         negative travel down to -90deg -->
+    <joint name="joint4" type="revolute">
+        <parent link="elbow_link" />
+        <child link="forearm_link" />
+        <origin xyz="0 0 0.092" rpy="0 0 0" />
+        <axis xyz="0 1 0" />
+        <limit effort="2.45" velocity="1.0" lower="-1.5708" upper="1.5708" />
+    </joint>
+
+    <!-- joint5 - wrist roll, about the arm axis Z, continuous 360deg
+         (NOTE - was Y pitch in the old model; corrected to Z roll) -->
+    <joint name="joint5" type="continuous">
+        <parent link="forearm_link" />
+        <child link="wrist_link" />
+        <origin xyz="0 0 0.031" rpy="0 0 0" />
+        <axis xyz="0 0 1" />
+    </joint>
+
+    <!-- wrist_hand_joint - fixed, wrist -> hand, 110mm (part of the 130mm) -->
+    <joint name="wrist_hand_joint" type="fixed">
+        <parent link="wrist_link" />
+        <child link="hand_link" />
+        <origin xyz="0 0 0.11" rpy="0 0 0" />
+    </joint>
+
+    <!-- hand_tool_joint - fixed, hand -> tool (gripper mount), 20mm.
+         joint5 -> tool_link = 0.11 + 0.02 = 0.13 (130mm to the gripper) -->
+    <joint name="hand_tool_joint" type="fixed">
+        <parent link="hand_link" />
+        <child link="tool_link" />
+        <origin xyz="0 0 0.02" rpy="0 0 0" />
+    </joint>
+
+</robot>

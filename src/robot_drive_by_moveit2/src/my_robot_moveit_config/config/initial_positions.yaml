@@ -1,0 +1,12 @@
+# Default initial positions for my_robot's ros2_control fake system
+# Values match the real servo initial positions (URDF geometry stays
+# with 0 = vertical-up reference, so asymmetric starts live here):
+#   joint2 = -45deg, joint3 = 0deg, joint4 = +90deg, joint5 = +90deg
+
+initial_positions:
+  gripper_left_finger_joint: 0
+  joint1: 0
+  joint2: -0.785398
+  joint3: 0
+  joint4: 1.5708
+  joint5: 1.5708
