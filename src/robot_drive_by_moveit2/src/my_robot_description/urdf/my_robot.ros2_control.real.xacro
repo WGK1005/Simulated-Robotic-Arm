@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--
+    REAL ros2_control block for the physical ZP25S arm.
+    Replaces the mock GenericSystem. Handles joint1..joint5 only
+    (gripper servo has no bus ID yet).
+
+    Per-joint parameters (set to your real mapping):
+      jointX_servo_id   - ZP25S bus ID (001..005)
+      jointX_direction  - +1 if increasing P == URDF positive, else -1
+    Common parameters:
+      serial_port  - e.g. /dev/ttyACM0
+      baud_rate    - 115200
+      move_time_ms - write duration T in '#IDPxxxxTxxxx!'
+  -->
+  <ros2_control name="Zp25sArm" type="system">
+    <hardware>
+      <plugin>my_robot_hardware/Zp25sSystem</plugin>
+      <param name="serial_port">/dev/ttyACM0</param>
+      <param name="baud_rate">115200</param>
+      <param name="move_time_ms">500</param>
+
+      <param name="joint1_servo_id">1</param>
+      <param name="joint1_direction">1</param>
+      <param name="joint2_servo_id">2</param>
+      <param name="joint2_direction">1</param>
+      <param name="joint3_servo_id">3</param>
+      <param name="joint3_direction">1</param>
+      <param name="joint4_servo_id">4</param>
+      <param name="joint4_direction">1</param>
+      <param name="joint5_servo_id">5</param>
+      <param name="joint5_direction">1</param>
+    </hardware>
+
+    <joint name="joint1">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+    <joint name="joint2">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+    <joint name="joint3">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+    <joint name="joint4">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+    <joint name="joint5">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+    </joint>
+  </ros2_control>
+
+</robot>

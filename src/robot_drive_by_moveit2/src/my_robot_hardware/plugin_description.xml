@@ -1,0 +1,10 @@
+<library path="my_robot_hardware">
+  <class name="my_robot_hardware/Zp25sSystem"
+         type="zp25s_hardware::Zp25sSystem"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      ros2_control system for 5 ZP25S serial bus servos (joint1..joint5).
+      Maps URDF radians to servo P values (zero 1500, 0.1333 deg/step).
+    </description>
+  </class>
+</library>

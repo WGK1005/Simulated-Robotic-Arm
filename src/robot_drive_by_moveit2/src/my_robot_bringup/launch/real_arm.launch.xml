@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!--
+  Real-robot bringup launch.
+
+  Starts the full stack against the physical ZP25S arm:
+    robot_state_publisher + ros2_control_node (real plugin) + spawners
+    + move_group (planning only, no mock) + optional rviz2
+
+  Serial port is used by the hardware plugin (real_controllers.yaml / real URDF).
+
+  For the very first motion test prefer arm_test_motion.py (no move_group
+  involved) instead of MoveIt planning.
+
+  rviz needs a display:
+    ros2 launch my_robot_bringup real_arm.launch.xml use_rviz:=true
+-->
+<launch>
+    <arg name="use_rviz" default="false" />
+    <arg name="rviz_config"
+         default="$(find-pkg-share my_robot_bringup)/config/my_robot_moveit.rviz" />
+
+    <let name="urdf_path"
+         value="$(find-pkg-share my_robot_description)/urdf/my_robot.urdf.real.xacro"/>
+    <let name="controllers_path"
+         value="$(find-pkg-share my_robot_bringup)/config/real_controllers.yaml"/>
+
+    <node pkg="robot_state_publisher" exec="robot_state_publisher">
+        <param name="robot_description"
+               value="$(command 'xacro $(var urdf_path)')" />
+    </node>
+
+    <node pkg="controller_manager" exec="ros2_control_node">
+        <param name="robot_description" value="$(command 'xacro $(var urdf_path)')" />
+        <param from="$(var controllers_path)" />
+    </node>
+
+    <node pkg="controller_manager" exec="spawner" args="joint_state_broadcaster" />
+    <node pkg="controller_manager" exec="spawner" args="arm_controller" />
+
+    <include file="$(find-pkg-share my_robot_moveit_config)/launch/move_group.launch.py" />
+
+    <node pkg="rviz2" exec="rviz2" output="screen"
+          args="-d $(var rviz_config)"
+          if="$(var use_rviz)" />
+</launch>

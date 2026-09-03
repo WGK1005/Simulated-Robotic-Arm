@@ -27,6 +27,7 @@ install(TARGETS
 # Python nodes (run with: ros2 run my_robot_commander_cpp <name>.py)
 install(PROGRAMS
   scripts/real_joint_state_bridge.py
+  scripts/arm_test_motion.py
   DESTINATION lib/${PROJECT_NAME}
 )
 

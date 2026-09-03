@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+  Real-robot URDF: same model as my_robot.urdf.xacro but the ros2_control
+  block uses the ZP25S hardware plugin instead of mock_components.
+  Kept separate so simulation (my_robot.urdf.xacro) stays untouched.
+-->
+<robot name="my_robot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:include filename="common_properties.xacro" />
+    <xacro:include filename="arm.xacro" />
+    <xacro:include filename="gripper.xacro" />
+    <xacro:include filename="my_robot.ros2_control.real.xacro" />
+
+    <joint name="gripper_base_joint" type="fixed">
+        <parent link="tool_link" />
+        <child link="gripper_base_link" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
+    </joint>
+
+</robot>
