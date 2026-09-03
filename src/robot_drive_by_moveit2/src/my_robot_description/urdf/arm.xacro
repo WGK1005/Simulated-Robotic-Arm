@@ -158,14 +158,13 @@
         <limit effort="2.45" velocity="1.0" lower="-0.785398" upper="1.5708" />
     </joint>
 
-    <!-- joint3 - elbow pitch, about Y. Initial at 0deg (link vertical to
-         the ground), range +-110deg -->
+    <!-- joint3 - elbow pitch, about Y. Initial at 0deg (vertical), range +-90deg -->
     <joint name="joint3" type="revolute">
         <parent link="arm_link" />
         <child link="elbow_link" />
         <origin xyz="0 0 0.118" rpy="0 0 0" />
         <axis xyz="0 1 0" />
-        <limit effort="2.45" velocity="1.0" lower="-1.91986" upper="1.91986" />
+        <limit effort="2.45" velocity="1.0" lower="-1.5708" upper="1.5708" />
     </joint>
 
     <!-- joint4 - wrist pitch, about Y.

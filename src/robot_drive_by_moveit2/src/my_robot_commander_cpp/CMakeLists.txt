@@ -24,5 +24,10 @@ install(TARGETS
   DESTINATION lib/${PROJECT_NAME}/
 )
 
+# Python nodes (run with: ros2 run my_robot_commander_cpp <name>.py)
+install(PROGRAMS
+  scripts/real_joint_state_bridge.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 
 ament_package()

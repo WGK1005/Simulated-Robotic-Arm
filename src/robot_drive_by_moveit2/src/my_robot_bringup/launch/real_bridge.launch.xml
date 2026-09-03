@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!--
+  Route A launch for the REAL robot (read-only bridge).
+
+  Starts only:
+    - robot_state_publisher   (URDF model)
+    - real_joint_state_bridge (polls ZP25S servos -> /joint_states)
+
+  No controller_manager / move_group / joint_state_publisher_gui here,
+  so nothing else publishes /joint_states and conflicts with the bridge.
+
+  rviz2 needs a display on the Orange Pi; enable it with:
+    ros2 launch my_robot_bringup real_bridge.launch.xml use_rviz:=true
+-->
+<launch>
+    <arg name="use_rviz" default="false" />
+    <arg name="rviz_config" default="$(find-pkg-share my_robot_description)/rviz/urdf_config.rviz" />
+
+    <let name="urdf_path"
+         value="$(find-pkg-share my_robot_description)/urdf/my_robot.urdf.xacro" />
+
+    <node pkg="robot_state_publisher" exec="robot_state_publisher">
+        <param name="robot_description"
+               value="$(command 'xacro $(var urdf_path)')" />
+    </node>
+
+    <node pkg="my_robot_commander_cpp" exec="real_joint_state_bridge.py"
+          output="screen" />
+
+    <node pkg="rviz2" exec="rviz2" output="screen"
+          args="-d $(var rviz_config)"
+          if="$(var use_rviz)" />
+</launch>
