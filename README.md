@@ -119,9 +119,9 @@ ros2 run my_robot_commander_cpp test_moveit
 # 3) 话题指令指挥官
 ros2 run my_robot_commander_cpp commander
 
-# 4) 发送指令测试
-ros2 topic pub /joint_command std_msgs/msg/Float64MultiArray "{data: [0.0, 0.5, -0.5, 0.0, 0.5]}"
-ros2 topic pub /open_gripper std_msgs/msg/Bool "{data: true}"
+# 4) 发送指令测试（注意消息类型是 example_interfaces，不是 std_msgs）
+ros2 topic pub /joint_command example_interfaces/msg/Float64MultiArray "{data: [0.0, 0.5, -0.5, 0.0, 0.5]}"
+ros2 topic pub /open_gripper example_interfaces/msg/Bool "{data: true}"
 ```
 
 > 5-DOF 臂无法到达任意 6D 位姿，`/pose_command` 只能发工作空间内可达的目标；

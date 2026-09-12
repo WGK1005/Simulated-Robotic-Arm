@@ -115,13 +115,13 @@ ros2 run my_robot_commander_cpp commander
 在新终端中发送以下指令测试：
 - **控制夹爪开合**：
   ```bash
-  ros2 topic pub /open_gripper std_msgs/msg/Bool "{data: true}"  # 打开夹爪
-  ros2 topic pub /open_gripper std_msgs/msg/Bool "{data: false}" # 关闭夹爪
+  ros2 topic pub /open_gripper example_interfaces/msg/Bool "{data: true}"  # 打开夹爪
+  ros2 topic pub /open_gripper example_interfaces/msg/Bool "{data: false}" # 关闭夹爪
   ```
 
 - **发送关节角度目标**（5个关节角度，范围：-π~π）：
   ```bash
-  ros2 topic pub /joint_command std_msgs/msg/Float64MultiArray "{data: [0.0, 0.5, -0.5, 0.0, 0.5]}"
+  ros2 topic pub /joint_command example_interfaces/msg/Float64MultiArray "{data: [0.0, 0.5, -0.5, 0.0, 0.5]}"
   ```
 
 - **发送位姿目标**（x,y,z 坐标 + roll,pitch,yaw 姿态，cartesian 表示是否使用笛卡尔路径；注意：五自由度机械臂无法到达任意六维位姿，请使用可达范围内的目标点）：
