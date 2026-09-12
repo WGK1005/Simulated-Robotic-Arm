@@ -12,6 +12,10 @@ find_package(rclcpp REQUIRED)
 find_package(control_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
 
+# Build a SHARED library. pluginlib loads hardware plugins with dlopen() at
+# runtime, so a static library cannot be used as a plugin.
+set(BUILD_SHARED_LIBS ON)
+
 add_library(
   my_robot_hardware
   src/zp25s_system.cpp

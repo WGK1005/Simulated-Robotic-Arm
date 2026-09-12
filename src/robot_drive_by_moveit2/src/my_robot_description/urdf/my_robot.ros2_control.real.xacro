@@ -6,13 +6,16 @@
     Replaces the mock GenericSystem. Handles joint1..joint5 only
     (gripper servo has no bus ID yet).
 
-    Per-joint parameters (set to your real mapping):
+    Per-joint parameters - set to your real mapping
       jointX_servo_id   - ZP25S bus ID (001..005)
-      jointX_direction  - +1 if increasing P == URDF positive, else -1
-    Common parameters:
+      jointX_direction  - +1 if increasing P means URDF positive, else -1
+    Common parameters
       serial_port  - e.g. /dev/ttyACM0
       baud_rate    - 115200
       move_time_ms - write duration T in '#IDPxxxxTxxxx!'
+
+    NOTE - keep ascii colon plus space out of these comments, the URDF text
+    is parsed with YAML rules by ros2 launch.
   -->
   <ros2_control name="Zp25sArm" type="system">
     <hardware>

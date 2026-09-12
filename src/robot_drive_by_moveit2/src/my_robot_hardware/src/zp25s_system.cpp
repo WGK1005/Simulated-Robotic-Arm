@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <poll.h>
 #include <unistd.h>
+#include <chrono>
 #include <cstring>
 #include <cmath>
 #include <algorithm>
@@ -121,12 +122,16 @@ hardware_interface::CallbackReturn Zp25sSystem::on_activate(
     return hardware_interface::CallbackReturn::ERROR;
   }
 
-  // read current angle of every servo once so the arm starts from reality
-  for (auto & j : joints_) {
+  // Read the current angle of every servo once, so both the state interfaces
+  // and the initial command start from the real arm pose instead of zero.
+  for (size_t i = 0; i < joints_.size(); ++i) {
+    auto & j = joints_[i];
     int p = 0;
     if (read_position(j.servo_id, &p)) {
       j.pos_rad = p_to_rad(j, p);
       j.cmd_rad = j.pos_rad;
+      hw_positions_[i] = j.pos_rad;
+      hw_commands_[i] = j.cmd_rad;
     }
   }
 
@@ -268,32 +273,59 @@ bool Zp25sSystem::send_position(int servo_id, int p_value, int duration_ms)
 
 bool Zp25sSystem::read_position(int servo_id, int * p_value_out)
 {
+  // Drop stale bytes first. Otherwise a reply left over from a previous poll
+  // (different servo) or a truncated frame (for example "P15" instead of
+  // "P1503") would be parsed and produce a wrong angle.
+  tcflush(fd_, TCIFLUSH);
+
   char cmd[16];
   snprintf(cmd, sizeof(cmd), "#%03dPRAD!", servo_id);
   if (::write(fd_, cmd, std::strlen(cmd)) < 0) {
     return false;
   }
 
-  // expect reply like "#001P1500!" (10 chars)
-  char buf[32];
-  size_t len = 0;
-  struct pollfd pfd = {fd_, POLLIN, 0};
-  int rc = ::poll(&pfd, 1, READ_TIMEOUT_MS);
-  if (rc <= 0) {
+  // Read exactly one frame, byte by byte, terminated by '!'.
+  // Expected reply for servo 1 is "#001P1503!".
+  std::string frame;
+  const auto deadline =
+    std::chrono::steady_clock::now() + std::chrono::milliseconds(READ_TIMEOUT_MS);
+  while (std::chrono::steady_clock::now() < deadline && frame.size() < 32) {
+    struct pollfd pfd = {fd_, POLLIN, 0};
+    if (::poll(&pfd, 1, 5) <= 0) {
+      continue;
+    }
+    char c = 0;
+    if (::read(fd_, &c, 1) != 1) {
+      continue;
+    }
+    frame.push_back(c);
+    if (c == '!') {
+      break;
+    }
+  }
+
+  // Need at least '#', 3 id digits, 'P', 3 value digits and '!'
+  if (frame.size() < 8 || frame.front() != '#' || frame.back() != '!') {
     return false;
   }
-  len = ::read(fd_, buf, sizeof(buf) - 1);
-  if (len <= 0) {
+
+  // The reply must come from the servo we asked, otherwise ignore it.
+  int reply_id = -1;
+  try {
+    reply_id = std::stoi(frame.substr(1, 3));
+  } catch (const std::exception &) {
     return false;
   }
-  buf[len] = '\0';
-  std::string s(buf);
-  auto ppos = s.find('P');
+  if (reply_id != servo_id) {
+    return false;
+  }
+
+  auto ppos = frame.find('P');
   if (ppos == std::string::npos) {
     return false;
   }
   try {
-    *p_value_out = std::stoi(s.substr(ppos + 1));
+    *p_value_out = std::stoi(frame.substr(ppos + 1));
   } catch (const std::exception &) {
     return false;
   }

@@ -28,6 +28,7 @@ install(TARGETS
 install(PROGRAMS
   scripts/real_joint_state_bridge.py
   scripts/arm_test_motion.py
+  scripts/servo_bus_check.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
