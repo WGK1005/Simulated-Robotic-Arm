@@ -23,7 +23,7 @@
     </group_state>
 
     <group_state name="gripper_closed" group="gripper">
-        <joint name="gripper_left_finger_joint" value="0.06"/>
+        <joint name="gripper_left_finger_joint" value="0.04"/>
     </group_state>
 
     <end_effector name="gripper" parent_link="tool_link" group="gripper" parent_group="arm"/>

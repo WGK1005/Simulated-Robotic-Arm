@@ -1,69 +1,98 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+    <!-- ================================================================
+         Simplified parallel gripper.
+
+         Real hardware - 3D printed 2-finger gripper with a parallelogram
+         linkage driven by a sector gear from a ZP25S servo. Here it is
+         simplified to a prismatic (translating) 2-finger gripper, which is
+         accurate enough for planning and MuJoCo simulation.
+
+         Measured on the real gripper (metres) -
+           base plate   80 x 20 x 20 mm  (X width, Y depth, Z thickness)
+           finger       10 x 20 x 80 mm  (X thickness, Y depth, Z length)
+           grip length  100 mm from the base plate bottom face to the fingertip
+           opening      80 mm between the inner faces when fully open
+                        (symmetric, 40 mm travel per finger)
+
+         Joint convention -
+           master value 0.0    -> fully open  (80 mm gap)
+           master value 0.04   -> fully closed (0 mm gap)
+         ================================================================ -->
+
+    <!-- gripper_base_link - palm / base plate.
+         Origin sits on the mounting face at tool_link; the plate extends
+         +Z (away from the arm) by 20mm -->
     <link name="gripper_base_link">
         <visual>
             <geometry>
-                <box size="0.2 0.06 0.02" />
+                <box size="0.08 0.02 0.02" />
             </geometry>
             <origin xyz="0 0 0.01" rpy="0 0 0" />
             <material name="dark_green" />
         </visual>
         <collision>
             <geometry>
-                <box size="0.2 0.06 0.02" />
+                <box size="0.08 0.02 0.02" />
             </geometry>
             <origin xyz="0 0 0.01" rpy="0 0 0" />
         </collision>
     </link>
 
+    <!-- gripper_left_finger_link - finger plate, 80mm long along +Z -->
     <link name="gripper_left_finger_link">
         <visual>
             <geometry>
-                <box size="0.02 0.06 0.08" />
+                <box size="0.01 0.02 0.08" />
             </geometry>
             <origin xyz="0 0 0.04" rpy="0 0 0" />
             <material name="light_green" />
         </visual>
         <collision>
             <geometry>
-                <box size="0.02 0.06 0.08" />
+                <box size="0.01 0.02 0.08" />
             </geometry>
             <origin xyz="0 0 0.04" rpy="0 0 0" />
         </collision>
     </link>
 
+    <!-- gripper_right_finger_link - mirror of the left finger -->
     <link name="gripper_right_finger_link">
         <visual>
             <geometry>
-                <box size="0.02 0.06 0.08" />
+                <box size="0.01 0.02 0.08" />
             </geometry>
             <origin xyz="0 0 0.04" rpy="0 0 0" />
             <material name="light_green" />
         </visual>
         <collision>
             <geometry>
-                <box size="0.02 0.06 0.08" />
+                <box size="0.01 0.02 0.08" />
             </geometry>
             <origin xyz="0 0 0.04" rpy="0 0 0" />
         </collision>
     </link>
 
+    <!-- left finger joint - starts at the OPEN position (centre -45mm, inner
+         face -40mm) and travels +40mm in X to close -->
     <joint name="gripper_left_finger_joint" type="prismatic">
         <parent link="gripper_base_link" />
         <child link="gripper_left_finger_link" />
-        <origin xyz="-0.07 0 0.02" rpy="0 0 0" />
+        <origin xyz="-0.045 0 0.02" rpy="0 0 0" />
         <axis xyz="1 0 0" />
-        <limit effort="1000.0" velocity="1.0" lower="0.0" upper="0.06" />
+        <limit effort="100.0" velocity="0.5" lower="0.0" upper="0.04" />
     </joint>
 
+    <!-- right finger joint - mimic of the left one with multiplier -1, so it
+         moves the opposite way and keeps the gripper symmetric -->
     <joint name="gripper_right_finger_joint" type="prismatic">
         <parent link="gripper_base_link" />
         <child link="gripper_right_finger_link" />
-        <origin xyz="0.07 0 0.02" rpy="0 0 0" />
+        <origin xyz="0.045 0 0.02" rpy="0 0 0" />
         <axis xyz="1 0 0" />
         <mimic joint="gripper_left_finger_joint" multiplier="-1.0" />
-        <limit effort="1000.0" velocity="1.0" lower="-0.06" upper="0.0" />
+        <limit effort="100.0" velocity="0.5" lower="-0.04" upper="0.0" />
     </joint>
 
 </robot>

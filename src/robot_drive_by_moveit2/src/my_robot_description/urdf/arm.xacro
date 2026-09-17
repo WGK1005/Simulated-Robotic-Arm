@@ -119,7 +119,8 @@
     </link>
 
     <!-- hand_link - short fixed mount where the gripper attaches.
-         joint5 -> tool_link total = 0.11 + 0.02 = 0.13 (130mm) -->
+         joint5 -> tool_link total = 0.02 + 0.01 = 0.03 (30mm measured from
+         the servo output shaft face to the gripper base plate) -->
     <link name="hand_link">
         <visual>
             <geometry>
@@ -139,12 +140,15 @@
     <!-- tool_link - gripper mounting frame (gripper attaches here) -->
     <link name="tool_link" />
 
-    <!-- joint1 - base yaw, rotation about vertical Z, continuous 360deg -->
-    <joint name="joint1" type="continuous">
+    <!-- joint1 - base yaw, about vertical Z.
+         Revolute (not continuous) so MoveIt/RViz exposes a joint slider.
+         Range +-135deg matches the ZP25S 270deg travel. -->
+    <joint name="joint1" type="revolute">
         <parent link="base_link" />
         <child link="shoulder_link" />
         <origin xyz="0 0 0" rpy="0 0 0" />
         <axis xyz="0 0 1" />
+        <limit effort="2.45" velocity="1.0" lower="-2.35619" upper="2.35619" />
     </joint>
 
     <!-- joint2 - shoulder pitch, about Y.
@@ -178,28 +182,31 @@
         <limit effort="2.45" velocity="1.0" lower="-1.5708" upper="1.5708" />
     </joint>
 
-    <!-- joint5 - wrist roll, about the arm axis Z, continuous 360deg
-         (NOTE - was Y pitch in the old model; corrected to Z roll) -->
-    <joint name="joint5" type="continuous">
+    <!-- joint5 - wrist roll, about the arm axis Z.
+         Revolute (not continuous) so MoveIt/RViz exposes a joint slider.
+         Range +-135deg matches the ZP25S 270deg travel. -->
+    <joint name="joint5" type="revolute">
         <parent link="forearm_link" />
         <child link="wrist_link" />
         <origin xyz="0 0 0.031" rpy="0 0 0" />
         <axis xyz="0 0 1" />
+        <limit effort="2.45" velocity="1.0" lower="-2.35619" upper="2.35619" />
     </joint>
 
-    <!-- wrist_hand_joint - fixed, wrist -> hand, 110mm (part of the 130mm) -->
+    <!-- wrist_hand_joint - fixed, wrist -> hand, 20mm of the 30mm gap -->
     <joint name="wrist_hand_joint" type="fixed">
         <parent link="wrist_link" />
         <child link="hand_link" />
-        <origin xyz="0 0 0.11" rpy="0 0 0" />
+        <origin xyz="0 0 0.02" rpy="0 0 0" />
     </joint>
 
-    <!-- hand_tool_joint - fixed, hand -> tool (gripper mount), 20mm.
-         joint5 -> tool_link = 0.11 + 0.02 = 0.13 (130mm to the gripper) -->
+    <!-- hand_tool_joint - fixed, hand -> tool (gripper mounting face), 10mm.
+         joint5 -> tool_link = 0.02 + 0.01 = 0.03 (30mm, servo shaft to
+         gripper base plate) -->
     <joint name="hand_tool_joint" type="fixed">
         <parent link="hand_link" />
         <child link="tool_link" />
-        <origin xyz="0 0 0.02" rpy="0 0 0" />
+        <origin xyz="0 0 0.01" rpy="0 0 0" />
     </joint>
 
 </robot>

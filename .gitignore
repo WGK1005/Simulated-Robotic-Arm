@@ -1,0 +1,16 @@
+# colcon workspace artifacts (build/install/log live at this repo root)
+build/
+install/
+log/
+
+# editors / tooling
+.vscode/
+.history/
+.idea/
+*.swp
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
