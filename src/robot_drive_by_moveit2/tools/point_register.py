@@ -867,19 +867,26 @@ def main():
         except Exception:  # noqa: BLE001
             pass
 
-    print("\nwaiting for camera + TF ...")
+    print("\nwaiting for the camera ...")
     for _ in range(150):
-        if reg.ready() and reg.tool_tip_in_base()[0] is not None:
+        if reg.ready():
             break
         time.sleep(0.1)
     else:
-        p, msg = reg.tool_tip_in_base()
-        print("!! not ready.  colour/depth/intrinsics:", reg.ready(),
-              " TF:", "ok" if p is not None else msg)
-        print("   is the camera driver running?  is the robot bringup up?")
-        print("   both must be up AT THE SAME TIME, in separate terminals.")
+        print("!! camera not ready.  colour image:", reg.color is not None,
+              " depth image:", reg.depth_m is not None,
+              " colour intrinsics:", reg.K is not None)
+        print("   is the camera driver running?")
         cleanup()
         return 1
+
+    # the robot side is only needed to RECORD points.  Let the tool come up
+    # camera-only so the marker, the depth and the HSV window can all be
+    # checked before the arm is even powered.
+    if reg.tool_tip_in_base()[0] is None:
+        print("!! WARNING: no TF %s <- %s - the robot bringup is not running."
+              % (args.base_frame, args.tool_frame))
+        print("   Test mode (press t) still works, but nothing can be recorded.")
 
     print("encoding      : %s  ->  scaled by %g"
           % (reg.depth_enc, args.depth_scale))
@@ -898,8 +905,10 @@ def main():
         if line.strip().lower() == "q":
             break
 
+        test_only = line.strip().lower() == "t"
+
         tip, msg_tf = reg.tool_tip_in_base()
-        if tip is None:
+        if tip is None and not test_only:
             print("   FAIL tf   : %s" % msg_tf)
             continue
 
@@ -913,11 +922,14 @@ def main():
             print("   FAIL      : %s" % msg_s)
             continue
 
-        if line.strip().lower() == "t":
+        if test_only:
             print("   TEST only (not stored): %s" % msg_s)
-            print("               cam  [%+.4f %+.4f %+.4f]"
-                  "   base [%+.4f %+.4f %+.4f]"
-                  % (p[0], p[1], p[2], tip[0], tip[1], tip[2]))
+            print("               cam  [%+.4f %+.4f %+.4f]" % (p[0], p[1], p[2]))
+            if tip is None:
+                print("               base unavailable (%s)" % msg_tf)
+            else:
+                print("               base [%+.4f %+.4f %+.4f]"
+                      % (tip[0], tip[1], tip[2]))
             continue
 
         if p_base:
